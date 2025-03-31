@@ -7,14 +7,15 @@ import torchvision.transforms as transforms
 import torchvision.models as models
 import base64
 import struct
+import os
 
 app = Flask(__name__)
 
-# Load a lightweight pretrained model (e.g. MobileNetV2)
-model = models.mobilenet_v2(pretrained=True)
+# Load MobileNetV2 model
+model = models.mobilenet_v2(weights=models.MobileNet_V2_Weights.DEFAULT)
 model.eval()
 
-# Resize + normalize image like the model expects
+# Image transform pipeline
 transform = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
@@ -29,7 +30,7 @@ def encode_vector_base64(vector):
 
 @app.route("/")
 def index():
-    return "DeepVision API is running"
+    return "DeepVision API is running."
 
 @app.route("/embed")
 def embed_image():
@@ -51,5 +52,7 @@ def embed_image():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+# Required for Render deployment
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000)
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
